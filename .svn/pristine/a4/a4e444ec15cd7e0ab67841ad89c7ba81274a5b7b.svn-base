@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class RedirectController {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	public static final String WX_APPID = "wx73c2d36878ef2aa7";
-	public static final String WX_APPSECRET = "bb4c776019f9bf152d82617d463a1537";
+	public static final String WX_APPID = "";
+	public static final String WX_APPSECRET = "";
 
 	/**
 	 * 微信网页授权流程: 1. 用户同意授权,获取 code 2. 通过 code 换取网页授权 access_token 3. 使用获取到的
