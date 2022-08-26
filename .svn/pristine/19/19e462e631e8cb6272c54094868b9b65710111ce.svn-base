@@ -1,0 +1,156 @@
+(function($) {
+    document.addEventListener('plusready', function(){
+        //console.log("所有plus api都应该在此事件发生后调用，否则会出现plus is undefined。"
+   });
+   $.getUrlParam = function(name){  
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");  
+        var r = window.location.search.substr(1).match(reg);  
+        if (r!=null) return unescape(r[2]); return null;  
+   };
+   data_arr = $.getUrlParam('conId');
+   publicAjax("getColContentById", {"id":data_arr}, function(data){
+        if(data.success){
+            var datas = data.list;
+            
+            var dataConHtml = "", dataVideoPath = "";
+            
+            if(datas[0].conHtml !== null) {
+                dataConHtml = datas[0].conHtml;
+            };
+            
+            if(datas[0].conVideoPath !== null) {
+                dataVideoPath = datas[0].conVideoPath;
+            };
+            
+            if(dataVideoPath !== ""){
+                $('.slideshow').hide(); 
+                $('#videos').attr('src', dataVideoPath);
+            }else{
+                $('#videos').hide();
+                $('.slideshow').attr("src",datas[0].conImg);
+            };
+            
+            con_img = datas[0].conImg;
+            con_title = datas[0].conTitle;
+            con_remark = datas[0].conRemark;
+            con_backMp3 = datas[0].backgroundMusic;
+            $('.mingzis').html(datas[0].userName);
+            $('.datan').html(times(datas[0].createDate));
+            $('.yuedu').html(datas[0].playCount);
+            $('.zhaiyao').html(datas[0].conRemark);
+            $('.presentation').html(dataConHtml + "</br></br></br></br>");
+            $('.xiaobiao').html(datas[0].exaCount);
+            //如果有背景音乐
+            if(con_backMp3 != null){
+                $("#back_mp3_div").css("display","");
+                $("#mp3_source").attr("src",con_backMp3);
+                mp3IconRotate();
+            }
+            //加载语音转换的Mp3
+            loadTTS();
+            
+        };
+   });
+    
+   
+//获取年月日
+    function times(times){
+        var time = new Date(times*1),
+            r = time.getDate() < 10 ? "0" + time.getDate() : time.getDate(),
+            y = time.getMonth() + 1 < 10 ? "0" + (time.getMonth() + 1): time.getMonth() + 1,
+            n = time.getFullYear();
+        return n +"-"+ y +"-"+ r;
+    };
+    
+//获取时分秒
+    function times2(times){
+        var time = new Date(times*1),
+            hour = time.getHours() < 10 ? "0" + time.getHours() : time.getHours();
+            minute = time.getMinutes() < 10 ? "0" + time.getMinutes() : time.getMinutes();
+            second = time.getSeconds() < 10 ? "0" + time.getSeconds() : time.getSeconds();
+        return hour + ":" + minute;
+    };
+})($);
+/**
+ *语音阅读
+ * ---------------------------------
+ */
+$(".tts").click(function() {
+    ttsIconRotate();
+})
+
+/**
+ *tts图标旋转
+ * 
+ */
+var ttsc = 0;
+var ttsivl = null;
+function ttsIconRotate(){
+    var t = document.getElementById('tts_img_btn');
+    if(ttsivl == null){
+        ttsivl = setInterval(function(){ 
+            current = (current+10)%360;
+            t.style.transform = 'rotate('+current+'deg)'; 
+        },200);
+        $("#tts_autio_id")[0].play();
+    }else{
+        clearInterval(ttsivl);
+        ttsivl = null;
+        $("#tts_autio_id")[0].pause();
+    }
+}
+
+
+function loadTTS() {
+    var tts_txt = "标题：" + con_title + "。摘要：" + con_remark + "。" + $('.presentation').text();
+    if (tts_txt.length < 1) {
+        return;
+    }
+    addAudio(tts_txt);
+}
+
+function addAudio(text) {
+    var url = "getTtsMp3";
+    $.ajax({
+        url : url,
+        type : 'POST',
+        dataType : "json",
+        data : {
+            "str" : text,
+            "conid" : data_arr
+        },
+        success : function(data) {
+            var audhtml = '<audio id="tts_autio_id">';
+            audhtml += '<source id="tts_source_id" src="' + data.msg + '" type="audio/mpeg">';
+            audhtml += '</audio>';
+            $("#tts_div").html(audhtml);
+
+        },
+        failure : function(data) {
+            alert("失败--" + data);
+        }
+    });
+}
+
+
+/**
+ * 背景音乐图标旋转
+ * 
+ */
+var current = 0;
+var mp3ivl = null;
+function mp3IconRotate(){
+    var t = document.getElementById('music_btn');
+    if(mp3ivl == null && $("#mp3_source").attr("src") != null){
+        mp3ivl = setInterval(function(){ 
+            current = (current+10)%360;
+            t.style.transform = 'rotate('+current+'deg)'; 
+        },200);
+        $("#mp3_audio")[0].play();
+    }else{
+        clearInterval(mp3ivl);
+        mp3ivl = null;
+        $("#mp3_audio")[0].pause();
+    }
+}
+

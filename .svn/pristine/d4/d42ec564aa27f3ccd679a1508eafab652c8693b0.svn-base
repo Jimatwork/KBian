@@ -1,0 +1,318 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">  
+  
+<html xmlns="http://www.w3.org/1999/xhtml" >  
+<head runat="server">  
+    <title></title>
+    <link rel="stylesheet" href="./meeting/bootstrap.min.css"/>
+	<script type="text/JavaScript" src="./meeting/jquery.min.js"></script>
+	<script type="text/JavaScript" src="./meeting/QHRTC.js"></script>
+	<style>
+		html,body{height:100%; width:100%;overflow:hidden; margin:0; padding:0;}
+		.title {
+			background: #36cada;
+			color: #fff;
+			font-size: 16px;
+			border-top-right-radius: 8px;
+			border-top-left-radius: 8px;
+			text-align: center;
+			line-height: 35px;
+		}
+
+		#wrap{  
+			height:100%; 
+			width:100%; 
+			margin:0 auto;  
+		}  
+		#header{  
+			margin:5px;  
+			height:3em;  
+			border:solid 1px #36cada;  
+		}  
+		#container{  
+			position:relative;  
+			margin:5px;  
+			height:100%; 
+		}  
+		#left_side{  
+			position:absolute;  
+			top:0px;  
+			left:0px; 
+			width:280px;  
+			height:91%;  
+		} 
+		.left_side_bottom{  
+			margin-left: 1px;
+			border:solid 1px #36cada;  
+			height:103%;
+			width:99%; 
+		}
+		.left_ul_div{
+			border-radius:5px;
+			margin-top: 7px;
+			margin-left: 1px;
+			height:81%;
+			width:99%; 
+		}
+		
+		#content{  
+			margin-left:20px;  
+			width:60%;  
+			height:90%;  
+		}
+		.content_live_bottom{  
+			margin-left: 1px;
+			border:solid 1px #36cada;  
+			height:91%;
+			width:99.5%; 
+		}
+	    video {
+			display: inline-block;
+			width: 100%;
+			height: 100%;
+	    }
+		.content_dh_bottom{  
+			margin-left: 1px;
+			border:solid 1px #36cada;  
+			height:110%;
+			width:99.5%; 
+		}
+		#right_side{  
+			position:absolute;  
+			top:0px;  
+			right:20px; 
+			width:35%;  
+			height:90%;  
+		}
+		#right_side>div{
+			margin-bottom: 3px;
+			width:100%;  
+			height:33.3%;  
+		}
+		.center_top{
+			height:67.5%;
+		}
+		.center_bottom{
+			margin-top: 3px;
+			height:33%;
+		}
+		.send_btn{
+			border: none;
+		    height: 33px;
+		    background: #428BCA;
+		    width: 80px;
+		    color: #fff;
+		    border-radius: 8px;
+		}
+		
+		
+		.liaot-left{width: 50px;height: 50px;background-color: aquamarine;margin: 0 20px;}
+		.liaot-left>img{width: 100%;height: 100%;}
+		.liaot-left-f{float: left;position: relative;}
+		.liaot-right-f{float: right;position: relative;}
+		.liaot-style{line-height: 15px;}
+		.style{background-color: #CCCCCC;border-radius: 3px;padding: 10px;width:fit-content;width:-webkit-fit-content;width:-moz-fit-content;max-width: 700px;word-wrap: break-word;}
+		.lt{margin: 30px 0;overflow: hidden;}
+		.zda{text-align: right;}
+		.yans{color: darkgrey;}
+		.jiant{border-top: 10px solid #fff;border-right: 10px solid #CCCCCC;border-bottom: 10px solid #fff;width: 10PX;
+		position: absolute;left: -20px;top: 38px;}
+		.jiant-r{border-top: 10px solid #fff;border-left: 10px solid #CCCCCC;border-bottom: 10px solid #fff;width: 10PX;
+		position: absolute;right: -10px;top: 25px;}
+	</style>
+</head>  
+<body>  
+	<div id="wrap">  
+		<!-- <div id="header"></div>   -->
+		<div id="container">  
+			<div id="content">
+				<div class="center_top">
+					<div class="title">会议互动直播
+						<div style="float: right;">
+							<button onclick="javascript:window.location.reload();" style="border: none;width: 114px;border-radius: 8px; height: 35px;background:#428BCA;float: right;margin-right: 1px;">刷 新</button>
+						</div>
+					</div>
+					<div id="videos" class="content_live_bottom">
+						<video id="me" autoplay></video>
+					</div>
+				</div>
+				<div class="center_bottom">
+					<div class="title">会议互动对话</div>
+					<div class="content_dh_bottom">
+						<div id="msg_div" style="overflow: auto;height:83.5%;background:#eeeeee;"></div>
+						<div style="margin-top: 3px;">
+							<input id="msg_text" type="text" style="width:88%;height:33px;"/>
+							<input onclick="sendMsg()" type="button" class="send_btn" value="发送 "/>
+						</div>
+					</div>
+				</div>
+			</div>  
+			<div id="right_side">
+				
+			</div>  
+		</div>  
+	</div>  
+   
+</body>  
+</html>  
+<script type="text/javascript">
+	function getQueryString(name) { 
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+		var r = window.location.search.substr(1).match(reg); 
+		if (r != null) return r[2]; return null; 
+	}
+	
+	var roomid = getQueryString("room");
+	var token = getQueryString("token");
+	
+	$.ajax({
+		type: "POST",
+		url: 'checkMeetingToken',
+		async : false,
+		data: {"roomid":roomid,"token":token},
+		dataType: "json",
+		success: function(obj){
+			if(obj == "0"){
+				window.location.href="./meeting/error.html"
+			}
+		}
+	});
+	
+	
+	var roomid = getQueryString("room");
+	var userName = getQueryString("uid");
+	var nick = decodeURI(getQueryString("nick"));
+	/*if(roomid.length != 6 || userName==null || nick==null){
+		alert("参数不合法！");
+		return;
+	}
+	*/
+	var rtc = SkyRTC();
+	//连接WebSocket服务器
+	rtc.connect("wss://qh.etmeeting.cn/etmrtc/",roomid,userName,nick);
+
+	
+	/**
+	* 发送文字消息
+	*/
+	function sendMsg(){
+		var msg = $("#msg_text").val();
+		if(msg.length < 1){
+			alert("不能发送空字符！");
+			return;
+		}	
+		rtc.broadcast("msg_"+nick+"_"+msg);
+		var html="<div class='lt-right lt'>";
+				html+="<div class='liaot-left liaot-right-f'>";
+				html+="    <img src='./meeting/user.png'>";
+				html+="</div>";
+				html+="<div class='liaot-right-f'>";
+				html+="	<div class='jiant-r'></div>";
+				html+="	<div class='liaot-style zda yans'>"+nick+"</div>";
+				html+="	<div class='style liaot-style'>"+msg+"</div>";
+				html+="</div>";
+				html+="</div>";
+		$("#msg_div").append(html);
+		$("#msg_text").val("");
+		$("#msg_div").scrollTop($("#msg_div").height());
+	}
+	
+	
+	 $("#msg_text").keydown(function(e) {  
+           if (e.keyCode == 13) {  
+                 sendMsg();
+           }  
+      });  
+	
+	
+	/**
+	* 接收文字消息
+	*/
+	rtc.on("data_channel_message", function(channel, socketId, message){
+		var msg = message.split("_");
+		if(msg[0] == "cmd"){
+			switch(msg[1]){
+				//切换视频窗口
+				case 'qh':
+					var me_src = $("#me").attr("src");
+					var to_src = $("#"+msg[2]).attr("src");
+					$("#me").attr("src",to_src);
+					$("#"+msg[2]).attr('src',me_src);
+					break;
+				case 'te':
+					break;
+			}
+		}else if(msg[0] == "msg"){
+			var html="<div class='lt-left lt'>";
+				html+="<div class='liaot-left liaot-left-f'>";
+				html+="    <img src='./meeting/user.png'>";
+				html+="</div>";
+				html+="<div class='liaot-left-f'>";
+				html+="	<div class='jiant'></div>";
+				html+="	<div class='liaot-style zda yans'>"+msg[1]+"</div>";
+				html+="	<div class='style liaot-style'>"+msg[2]+"</div>";
+				html+="</div>";
+				html+="</div>";
+			$("#msg_div").append(html);
+			$("#msg_div").scrollTop($("#msg_div").height());
+		}
+	});
+	
+	/**
+	* 成功创建WebSocket连接
+	*/
+	rtc.on("connected", function(socket) {
+	  //创建本地视频流
+		rtc.createStream({
+		  "video": true,
+		  "audio": true
+		});
+	});
+	
+	/**
+	* 创建本地视频流成功
+	*/
+	rtc.on("stream_created", function(stream) {
+		document.getElementById('me').src = URL.createObjectURL(stream);
+		document.getElementById('me').play();
+	});
+	
+	/**
+	* 创建本地视频流失败
+	*/
+	rtc.on("stream_create_error", function() {
+		alert("请连接摄像头！");
+	});
+	
+	/**
+	* 接收到其他用户的视频流
+	*/
+	rtc.on("pc_add_stream", function(stream, socketdata) {
+		$("#uid_"+socketdata.username).remove();
+		var url = URL.createObjectURL(stream);
+		var html = "";
+		html += "<div id=uid_"+socketdata.username+">";
+		html += "	<div class='title'>"+socketdata.nickname+"</div>";
+		html += "	<div style='height:93%;' class='content_dh_bottom'>";
+		html += "		<video src="+url+" onclick='clickVideo(this)' autoplay></video>";
+		html += "	</div>";
+		html += "</div>";
+		$("#right_side").append(html);
+	});
+		
+	/**
+	* 用户退出事件
+	*/
+	rtc.on("remove_peer", function(socketdata) {
+		$("#uid_"+socketdata.username).remove();
+		var url = "";
+	    $.getJSON(url,{"uid":socketdata.username},function(result){
+	    	
+		});
+	});
+	function clickVideo(t){
+		var me_src = $("#me").attr("src");
+		$("#me").attr("src",t.src);
+		$(t).attr('src',me_src);
+		rtc.broadcast("cmd_qh_"+t.id);
+	}
+</script>

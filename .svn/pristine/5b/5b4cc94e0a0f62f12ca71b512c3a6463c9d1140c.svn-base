@@ -1,0 +1,182 @@
+package com.kubian;
+
+import com.kubian.mode.ServerPath;
+import com.kubian.mode.User;
+import com.kubian.mode.dao.ServerPathDao;
+import com.kubian.mode.dao.UserDao;
+import com.kubian.mode.util.ListRange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * 系统管理
+ * ClassName:UserController
+ * @Description: TODO
+ * @author WangW
+ * @date 2018年4月10日
+ */
+@RestController
+public class UserController {
+
+	private static final Logger log = LoggerFactory.getLogger(UserController.class);
+	private static final long serialVersionUID = 1L;
+
+	@Autowired
+	private UserDao userDao;
+	@Autowired
+	private ServerPathDao serverPathDao;
+
+	private ListRange<User> listRange = new ListRange<User>();
+
+	/**
+	 * 登录
+	 *
+	 * @param user
+	 * @param request
+	 * @return String
+	 * @throws
+	 * @Description: TODO
+	 * @author WangW
+	 * @date 2018年4月10日
+	 */
+	@RequestMapping(value = "/login")
+	@ResponseBody
+	public Object login(User user, HttpServletRequest request) {
+		ListRange<User> listRange = new ListRange<User>();
+		try {
+			String userName = user.getUserName();
+			String userPwd = user.getUserPwd();
+			if (userName.equals("") || userName == null || userPwd.equals("") || userPwd == null) {
+				listRange.setMessage("用户名或者密码为空");
+				listRange.setSuccess(false);
+			} else {
+				User flag = userDao.findByUserNameAndUserPwd(user.getUserName(), user.getUserPwd());
+				if (flag != null) {
+					request.getSession().setAttribute("wuser", flag);
+					if (2 == flag.getUserRole()) {
+						//return "loginApp";
+					} else {
+						listRange.setMessage("登录成功!");
+						listRange.setSuccess(true);
+						listRange.setList(null);
+						listRange.setTotalSize(0);
+					}
+				} else {
+					listRange.setMessage("用户名或密码错误!");
+					listRange.setSuccess(false);
+					listRange.setList(null);
+					listRange.setTotalSize(0);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return listRange;
+	}
+
+	/**
+	 * 查询session
+	 *
+	 * @param request
+	 * @return Object
+	 * @throws
+	 * @Description: TODO
+	 * @author WangW
+	 * @date 2018年4月10日
+	 */
+	@RequestMapping(value = "/queryLogin")
+	@ResponseBody
+	public Object queryLogin(HttpServletRequest request) {
+		User user = (User) request.getSession().getAttribute("wuser");
+		//this.outJsonString(user.getId()+","+user.getUserPwd());
+		return user.getId() + "," + user.getUserPwd();
+	}
+
+	/**
+	 * 修改密码
+	 *
+	 * @param user
+	 * @param request
+	 * @return Object
+	 * @throws
+	 * @Description: TODO
+	 * @author WangW
+	 * @date 2018年4月10日
+	 */
+	@RequestMapping(value = "/modUser")
+	@ResponseBody
+	public Object modUser(User user, HttpServletRequest request) {
+		ListRange<User> listRange = new ListRange<User>();
+		try {
+			User users = userDao.findById(user.getId());
+			users.setUserPwd(user.getUserPwd());
+			userDao.save(users);
+			if(users.getUserPwd().equals(user.getUserPwd())){
+				listRange.setSuccess(true);
+				listRange.setMessage("密码修改成功!");
+				listRange.setList(null);
+				listRange.setTotalSize(0);
+			}
+			// 删除session
+			request.getSession().invalidate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return listRange;
+	}
+
+	/**
+	 * 注销
+	 *
+	 * @param request
+	 * @return Object
+	 * @throws
+	 * @Description: TODO
+	 * @author WangW
+	 * @date 2018年4月10日
+	 */
+	@RequestMapping(value = "/loginout")
+	@ResponseBody
+	public Object loginout(HttpServletRequest request) {
+		ListRange<User> listRange = new ListRange<User>();
+		request.getSession().invalidate();
+		listRange.setMessage("注销成功!");
+		listRange.setSuccess(true);
+		listRange.setList(null);
+		listRange.setTotalSize(0);
+		return listRange;
+	}
+
+	/**
+	 * 设置服务器请求地址
+	 *
+	 * @param server_path
+	 * @return Object
+	 * @throws
+	 * @Description: TODO
+	 * @author WangW
+	 * @date 2018年4月10日
+	 */
+	@RequestMapping(value = "/setServerPath")
+	@ResponseBody
+	public Object setServerPath(String server_path) {
+		ServerPath sp = null;
+		try {
+			sp = serverPathDao.getAll();
+			if (sp == null) {
+				sp = new ServerPath();
+			}
+			sp.setServerPath(server_path);
+			serverPathDao.save(sp);
+			return sp;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return sp;
+		}
+	}
+}

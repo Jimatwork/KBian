@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>修改用户信息</title>
+		<link rel="stylesheet" type="text/css" href="css/css.css" />
+		<style type="text/css">
+			.bbD .bbDP .btn_ok {
+				margin-top: 10px;
+				margin-right: 5px;
+			}
+		</style>
+		<script type="text/javascript" src="js/requestip.js"></script>
+		<script type="text/javascript" src="js/jquery.min.js"></script>
+		<script type="text/javascript" src="js/changeUser.js"></script>
+
+	</head>
+
+	<body>
+		<div id="pageAll">
+			<div class="pageTop">
+				<div class="page">
+					<span>修改用户信息</span>
+				</div>
+			</div>
+			<form id="form_user3" method="post">
+				<!-- 修改密码页面样式 -->
+				<div class="bacen">
+					<div class="bbD">
+						&nbsp;&nbsp;&nbsp;&nbsp;用户昵称：<input class="input3" type="text" name="nickName" /> <input name="id" type="hidden" class="user_id" />
+					</div>
+					<div class="bbD">
+						&nbsp;&nbsp;&nbsp;&nbsp;用户头像：&nbsp;&nbsp;<input type="file" name="imgFile" />
+					</div>
+					<div class="bbD">
+						<p class="bbDP">
+							<input type="button" class="btn_ok btn_yes" value="上传" id="tj" />
+							<a class="btn_ok btn_no" href="#">取消</a>
+						</p>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+
+</html>
